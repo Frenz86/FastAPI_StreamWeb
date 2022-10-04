@@ -5,6 +5,7 @@ import uvicorn
 from fastapi_frame_stream import FrameStreamer
 import base64
 import sys
+import cv2
 
 sys.path.append("./")
 
@@ -35,15 +36,25 @@ async def predict_str64(file: UploadFile = File(...)):
     base64str = base64.b64encode(await file.read()).decode("utf-8")
     return base64str
 
+
+@app.post("/send_frame_from_file/{img_id}")
+async def send_frame_from_file(img_id: str, file: UploadFile = File(...)):
+    await fs.send_frame(img_id, file)
+
+
 @app.post("/send_frame_from_string/{img_id}")
 async def send_frame_from_string(img_id: str, d:InputImg):
     await fs.send_frame(img_id, d.img_base64str)
 
 
-## to stream into video_feed a single loaded image
-@app.post("/send_frame_from_file/{img_id}")
-async def send_frame_from_file(img_id: str, file: UploadFile = File(...)):
-    await fs.send_frame(img_id, file)
+########################################################
+              ## cascade 
+##########################################################
+
+app.post("/send_frame_from_string/{img_id}")
+async def send_frame_from_string(img_id: str, d:InputImg):
+    await fs.send_frame(img_id, d.img_base64str)
+
 
 
 ##########################################################
@@ -52,6 +63,5 @@ async def send_frame_from_file(img_id: str, file: UploadFile = File(...)):
 async def video_feed(img_id: str):
     return fs.get_stream(img_id)
 
-
 if __name__ == '__main__':
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True , workers=24)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
