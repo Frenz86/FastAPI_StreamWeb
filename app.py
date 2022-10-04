@@ -1,15 +1,9 @@
-import threading
-
-import cv2
 import streamlit as st
-from matplotlib import pyplot as plt
-import base64
-from streamlit_webrtc import webrtc_streamer
+import cv2
 import json
+import base64
 import requests
 
-lock = threading.Lock()
-img_container = {"img": None}
 
 class BytesEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -17,40 +11,44 @@ class BytesEncoder(json.JSONEncoder):
             return obj.decode('utf-8')
         return json.JSONEncoder.default(self, obj)
 
+st.title("Project")
 
-def video_frame_callback(frame):
-    #img = cv2.flip(frame, 0)
-    img = frame.to_ndarray(format="bgr24")
-    with lock:
-        img_container["img"] = img
+# load OpenCV's Haar cascade for face detection from disk
+#haar = "haarcascade_frontalface_default.xml"
+#detector = cv2.CascadeClassifier(haar)
 
-    return frame
+# initialize the video stream
+"Starting video stream..."
 
 
-ctx = webrtc_streamer(key="example", video_frame_callback=video_frame_callback)
+@st.cache(allow_output_mutation=True)
+def get_cap():
+    return cv2.VideoCapture(0)
 
-fig_place = st.empty()
-fig, ax = plt.subplots(1, 1)
+cap = get_cap()
 
-while ctx.state.playing:
-    with lock:
-        img = img_container["img"]
-    if img is None:
-        continue
-    
-    width = 200
-    height = 140
-    dim = (width, height)
-    
-    # resize image
-    img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ax.cla()
-    ax.hist(gray.ravel(), 256, [0, 256])
-    fig_place.pyplot(fig)
+frameST = st.empty()
 
-    # Convert captured image to JPG
-    retval, buffer = cv2.imencode('.jpg', img)
+# loop over the frames from the video stream
+while True:
+    ret, frame = cap.read()
+
+    # # detect faces in the grayscale frame
+    # rects = detector.detectMultiScale(
+    #     cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), scaleFactor=1.1, 
+    #     minNeighbors=5, minSize=(30, 30))
+
+    # # loop over the face detections and draw them on the frame
+    # for (x, y, w, h) in rects:
+    #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+    # show the output frame
+    flipped = cv2.flip(frame, 1)
+    img_final = cv2.cvtColor(flipped, cv2.COLOR_BGR2RGB)
+    frameST.image(img_final)
+
+    #Convert captured image to JPG
+    retval, buffer = cv2.imencode('.jpg', img_final)
     # Convert to base64 encoding 
     base64str = base64.b64encode(buffer)
 
@@ -58,8 +56,7 @@ while ctx.state.playing:
     
     payload = json.dumps({"img_base64str": base64str}, cls=BytesEncoder)
     response = requests.post(url,data = payload)
-    print(payload) 
+    #print(payload) 
 
 
-# if __name__ == "__main__":
-#     main()
+
