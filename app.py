@@ -23,7 +23,7 @@ selection = st.radio("Select option", options=['only camera','camera+ api'])
 
 # Create text input for user entry
 if selection == "only camera": 
-    st.write("selexionato uno")
+    st.write("only camera")
 
     @st.cache(allow_output_mutation=True)
     def get_cap():
@@ -53,7 +53,7 @@ if selection == "only camera":
 
 
 if selection != "only camera": 
-    st.write("selexionato due")
+    st.write("camera + api")
 
     @st.cache(allow_output_mutation=True)
     def get_cap():
@@ -90,5 +90,5 @@ if selection != "only camera":
         url = "http://localhost:8000/send_frame_from_string/stream002" 
         
         payload = json.dumps({"img_base64str": base64str}, cls=BytesEncoder)
-        response = requests.post(url,data = payload)
+        response = requests.post(url,data = payload,stream=True)
         #print(payload) 

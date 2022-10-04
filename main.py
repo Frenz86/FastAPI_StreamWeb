@@ -4,13 +4,15 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 from fastapi_frame_stream import FrameStreamer
 import base64
+import sys
+
+sys.path.append("./")
 
 app = FastAPI()
 fs = FrameStreamer()
 
 class InputImg(BaseModel):
     img_base64str : str
-
 
 templates = Jinja2Templates(directory="templates")
 
@@ -52,4 +54,4 @@ async def video_feed(img_id: str):
 
 
 if __name__ == '__main__':
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True , workers=8)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True , workers=24)
