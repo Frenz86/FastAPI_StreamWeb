@@ -6,7 +6,7 @@ lo stremaer (python o javascript) mandera le immagini webcam in formato base64 a
   questo internamente lo routerà in GET all "/video_feed/{img_id}" sul html 127.0.0.1:8000, 
 
 per il test con python:
-- pip3 install -r requirements.txt
+- pip install -r requirements.txt
 - python main.py
 
 in un secondo terminale:
