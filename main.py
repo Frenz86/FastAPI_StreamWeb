@@ -54,6 +54,7 @@ async def send_frame_from_string(img_id: str, d:InputImg):
 app.post("/send_frame_from_string/{img_id}")
 async def send_frame_from_string(img_id: str, d:InputImg):
     await fs.send_frame(img_id, d.img_base64str)
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 
 
